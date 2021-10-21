@@ -14,12 +14,13 @@ def f(x1, x2):
 # from mpl_toolkits.mplot3d import Axes3D, use ax.contour3D on 3 inputs with shapes (sqrt(n_examples), sqrt(n_examples))
 # You may do 3. first to get the data and figure out why the shapes are like this
 
-def plot(X1, X2, f):
+def plot(X1, X2, f, predictions):
     import matplotlib.pyplot as plt
     Z = f(X1, X2)
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.contour3D(X1, X2, Z, 50, cmap='binary')
+    ax.contour3D(X1, X2, predictions, 50, cmap='binary')
     ax.set_xlabel('x1')
     ax.set_ylabel('x2')
     ax.set_zlabel('y')
@@ -41,15 +42,24 @@ X1, X2 = np.meshgrid(x1, x2)
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.optimizers import SGD
 
+# Set parameters
 LR = 0.1
 N_NEURONS = 10
 N_EPOCHS = 500
 
-model = Sequential([Dense(N_NEURONS, input_dim=1)])
+# Create model. Add input size, activation function, and output size
+model = Sequential([Dense(N_NEURONS, input_dim=1),
+                    Activation('tanh'),
+                    Dense(1)])
 
 # 5. Use Adam or another optimizer and train the network. Find an appropriate learning rate and number of epochs.
 
-# 6. Use the function you defined in 2. to visualize how well your MLP fits the original function
+# Compile optimization method, learning rate, and error metric.
+model.compile(optimizer=SGD(lr=LR), loss="mean_squared_error")
+trained_model = model.fit(x1, f(x1,x2), epochs=N_EPOCHS, batch_size=len(x1))
 
+# 6. Use the function you defined in 2. to visualize how well your MLP fits the original function
+plot(X1, X2, f, model.predict(X1))
 # %% -------------------------------------------------------------------------------------------------------------------
